@@ -1,77 +1,87 @@
-import React, {useEffect, useState} from "react"
+import * as React from "react"
 import { Frame } from "framer"
+import { Compass } from "./compass"
+
 
 // Open Preview (CMD + P)
 // API Reference: https://www.framer.com/api
 
 export function Locator() {
 
-    const [centerX, setCenterX] = useState(0.0)
-    const [centerY, setCenterY] = useState(0.0)
-    const [deviceX1, setDeviceX1] = useState(0.0)
-    const [deviceY1, setDeviceY1] = useState(0.0)
-    const [deviceX2, setDeviceX2] = useState(0.0)
-    const [deviceY2, setDeviceY2] = useState(0.0)
 
-    const [alpha, setAlpha] = useState(0.0)
-
-    const [timer, setTimer] = useState(null)
-    const [isMounted, setIsMounted] = useState(false)
+    const [devicePosition, setDevicePosition] = React.useState({
+        centerX: 0.0,
+        centerY: 0.0,
+        deviceX1: 0.0,
+        deviceY1: 0.0,
+        deviceX2: 0.0,
+        deviceY2: 0.0,
+        // deviceX3: 0.0,
+        // deviceY3: 0.0,
+    })
+    const [timer, setTimer] = React.useState(null)
+    let isMounted = true
+    React.useEffect(() => {
+        updateDevicePosition()
+        return () => {
+            isMounted = false
+        }
+    }, [])
 
     async function updateDevicePosition() {
         try {
             const result = await fetch("http://192.168.10.233:34599/")
             const data = await result.json()
-            setCenterX(data[0].x)
-            setCenterY(data[0].y)
-            setDeviceX1(data[1].x)
-            setDeviceY1(data[1].y)
-            setDeviceX2(data[2].x)
-            setDeviceY2(data[2].y)
+            if (isMounted) {
+                setDevicePosition({
+                    centerX: data[0].x,
+                    centerY: data[0].y,
+                    deviceX1: data[1].x,
+                    deviceY1: data[1].y,
+                    deviceX2: data[2].x,
+                    deviceY2: data[2].y,
+                    // deviceX3: data[3].x,
+                    // deviceY3: data[3].y,
+                })
+            }
         } catch (e) {
             console.error(e)
         }
-        clearTimeout(timer)
-        setTimer(setTimeout(updateDevicePosition, 200))
+        if (isMounted) {
+            clearTimeout(timer)
+            setTimer(setTimeout(updateDevicePosition, 200))
+        }
     }
 
-    useEffect(() => {
-        if (!isMounted) {
-            updateDevicePosition()
-            setIsMounted(true)
-        }
-    })
 
 
-    useEffect(() => {
-        const handleOrientation = e => {
-            setAlpha(e.alpha)
-        }
-        window.addEventListener("deviceorientation", handleOrientation, true)
-        return () => {
-            window.addEventListener(
-                "deviceorientation",
-                handleOrientation,
-                true
-            )
-        }
-    }, [])
+    
 
-    let offset_pos_x_1 = ((deviceX1 - centerX) / 4) * 300
-    let offset_pos_y_1 = ((deviceY1 - centerY) / 4) * 300
+    
+    let offset_pos_x_1 = ((devicePosition.deviceX1 - devicePosition.centerX) / 4) * 300
+    let offset_pos_y_1 = ((devicePosition.deviceY1 - devicePosition.centerY) / 4) * 300
 
-    let offset_pos_x_2 = ((deviceX2 - centerX) / 4) * 300
-    let offset_pos_y_2 = ((deviceY2 - centerY) / 4) * 300
+    let offset_pos_x_2 = ((devicePosition.deviceX2 - devicePosition.centerX) / 4) * 300
+    let offset_pos_y_2 = ((devicePosition.deviceY2 - devicePosition.centerY) / 4) * 300
+
+    // let offset_pos_x_3 = ((devicePosition.deviceX3 - devicePosition.centerX) / 4) * 300
+    // let offset_pos_y_3 = ((devicePosition.deviceY3 - devicePosition.centerY) / 4) * 300
+
 
     let tag_x_1 =
-        offset_pos_x_1 * Math.cos(alpha) - offset_pos_y_1 * Math.sin(alpha)
+        offset_pos_x_1 * Math.cos(180) - offset_pos_y_1 * Math.sin(180)
     let tag_y_1 =
-        offset_pos_y_1 * Math.cos(alpha) - offset_pos_x_1 * Math.sin(alpha)
+        offset_pos_y_1 * Math.cos(180) - offset_pos_x_1 * Math.sin(180)
 
     let tag_x_2 =
-        offset_pos_x_2 * Math.cos(alpha) - offset_pos_y_2 * Math.sin(alpha)
+        offset_pos_x_2 * Math.cos(180) - offset_pos_y_2 * Math.sin(180)
     let tag_y_2 =
-        offset_pos_y_2 * Math.cos(alpha) - offset_pos_x_2 * Math.sin(alpha)
+        offset_pos_y_2 * Math.cos(180) - offset_pos_x_2 * Math.sin(180)
+
+    //     let tag_x_3 =
+    //     offset_pos_x_3 * Math.cos(alpha) - offset_pos_y_3 * Math.sin(alpha)
+    // let tag_y_3 =
+    //     offset_pos_y_3 * Math.cos(alpha) - offset_pos_x_3 * Math.sin(alpha)
 
     return (
         <Frame center backgroundColor={"transparent"}>
@@ -81,6 +91,7 @@ export function Locator() {
                 size={30}
                 backgroundColor={"lightgray"}
             />
+            
             <Frame
                 x={tag_x_1 * 2}
                 y={tag_y_1 * 2}
@@ -97,15 +108,25 @@ export function Locator() {
                 size={30}
                 backgroundColor={"green"}
             />
-            <Frame backgroundColor={"transparent"} y={-40}>
-                {alpha.toFixed(1)}
-            </Frame>
+            <Frame
+                // x={tag_x_3 * 2}
+                // y={tag_y_3 * 2}
+                center
+                radius={"50%"}
+                size={30}
+                backgroundColor={"green"}
+            />
+            <Compass />
             <Frame backgroundColor={"transparent"} y={0}>
-                {tag_x_1.toFixed(1)} / {tag_y_1.toFixed(1)}
+                {tag_x_1.toFixed(1)}, {tag_y_1.toFixed(1)}
             </Frame>
             <Frame backgroundColor={"transparent"} y={40}>
-                {tag_x_2.toFixed(1)} / {tag_y_2.toFixed(1)}
+            {tag_x_2.toFixed(1)}, {tag_y_2.toFixed(1)}
             </Frame>
+            <Frame backgroundColor={"transparent"} y={80}>
+            
+            </Frame>
+
         </Frame>
     )
 }

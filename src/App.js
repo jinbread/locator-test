@@ -1,13 +1,14 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import { Locator } from './Locator';
+import { Compass } from './compass';
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <Locator/>
+
+        <Compass />
       </header>
     </div>
   );
