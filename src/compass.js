@@ -1,6 +1,5 @@
 import * as React from "react"
 import { Frame } from "framer"
-import DeviceOrientation from 'react-device-orientation';
 
 // Open Preview (CMD + P)
 // API Reference: https://www.framer.com/api
@@ -21,16 +20,6 @@ export function Compass() {
     return (
         <Frame center backgroundColor={"transparent"} y={-40}>
             {alpha.toFixed(1)}
-            <DeviceOrientation>
-                {({ absolute, alpha, beta, gamma }) => (
-                <div>
-                    {`Absolute: ${absolute}`}
-                    {`Alpha: ${alpha}`}
-                    {`Beta: ${beta}`}
-                    {`Gamma: ${gamma}`}
-                </div>
-                )}
-            </DeviceOrientation>
         </Frame>
     )
 }
